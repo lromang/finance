@@ -13,7 +13,7 @@ library(data.table)
 library(ggplot2)
 library(lubridate)
 library(stringr)
-
+library(readr)
 
 ################################
 ## Read in datasets
@@ -75,3 +75,15 @@ ba.spread <- data.crsp[, ask - bid, by = c("date", "ticker")]
 ## Volume
 ## ------------------------------
 market.value <- data.crsp[, .N, by = c("date")]
+
+## ------------------------------
+## BetaM1
+## ------------------------------
+data.crsp.beta <- na.omit(data.crsp)
+part_mRet <- data.crsp[, readr::parse_number(shrout)*readr::parse_number(ret),
+                 by = c("date", "cusip")]
+names(part_mRet) <- c("date", "cusip", "return")
+##
+mRet <- data.crsp[, readr::parse_number(shrout)*readr::parse_number(ret),
+                 by = c("date")]
+names(mRet) <- c("date",  "return")
