@@ -4,9 +4,9 @@
 ##################################################
 
 
-## ------------------------------
+################################
 ## Libraries
-## ------------------------------
+################################
 library(plyr)
 library(dplyr)
 library(data.table)
@@ -14,17 +14,19 @@ library(ggplot2)
 library(lubridate)
 library(stringr)
 
-## ------------------------------
+
+################################
 ## Read in datasets
-## ------------------------------
+################################
 data.comp <- fread("../data/compustatFA.csv")
 names(data.comp) <- tolower(names(data.comp))
 data.crsp <- fread("../data/CRSP.csv")
 names(data.crsp) <- tolower(names(data.crsp))
 
-## ------------------------------
+
+################################
 ## Process datasets
-## ------------------------------
+################################
 
 ## Date crsp
 year  <- str_sub(data.crsp$date, 1, 4)
@@ -40,14 +42,36 @@ day   <- str_sub(data.comp$datadate, 7, 8)
 date  <- as.Date(paste(year, month, day, sep = "-"))
 data.comp$datadate <- date
 
-
-
-## ------------------------------
+################################
 ## Calculate variables
-## ------------------------------
+################################
 
+## ------------------------------
 ## Enterprise number
+## ------------------------------
 enterprises   <- data.crsp$comnam
-n_enterprises <- length(unique(data.crsp$comnam))
-##
-n_enterprise <- data.crsp[,.N, by = comnam]
+n.enterprises <- length(unique(data.crsp$comnam))
+
+## ------------------------------
+## Market value
+## ------------------------------
+mv <- data.crsp[, shrout*prc, by = c("date", "cusip")]
+names(mv) <- c("date", "cusip", "mv")
+
+## ------------------------------
+## Book Value / Market Value
+## ------------------------------
+## Book Value
+books <- data.comp[, bkvlps, by = c("date", "cusip")]
+data.book <- merge(books, mv, by = "cusip")
+bv <- data.comp$bkvlps*
+
+## ------------------------------
+## Bid ask spread
+## ------------------------------
+ba.spread <- data.crsp[, ask - bid, by = c("date", "ticker")]
+
+## ------------------------------
+## Volume
+## ------------------------------
+market.value <- data.crsp[, .N, by = c("date")]
